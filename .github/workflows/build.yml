@@ -54,17 +54,67 @@ jobs:
           CONFIG_TARGET_qualcommax_ipq60xx=y
           CONFIG_TARGET_qualcommax_ipq60xx_DEVICE_jdcloud_re-cs-02=y
           CONFIG_TARGET_MULTI_PROFILE=n
-          CONFIG_PACKAGE_docker=y
-          CONFIG_PACKAGE_dockerd=y
-          CONFIG_PACKAGE_docker-compose=y
-          CONFIG_PACKAGE_luci-app-dockerman=y
+
+          # ===== LuCI 完整界面 (关键!) =====
           CONFIG_PACKAGE_luci=y
+          CONFIG_PACKAGE_luci-base=y
+          CONFIG_PACKAGE_luci-light=y
+          CONFIG_PACKAGE_luci-mod-admin-full=y
+          CONFIG_PACKAGE_luci-mod-status=y
+          CONFIG_PACKAGE_luci-mod-system=y
+          CONFIG_PACKAGE_luci-mod-network=y
+          CONFIG_PACKAGE_luci-app-firewall=y
+          CONFIG_PACKAGE_luci-app-package-manager=y
+          CONFIG_PACKAGE_luci-theme-bootstrap=y
+          CONFIG_PACKAGE_luci-proto-ipv6=y
+          CONFIG_PACKAGE_luci-proto-ppp=y
+          CONFIG_PACKAGE_luci-ssl=y
+          CONFIG_PACKAGE_luci-lib-uqr=y
+
+          # ===== LuCI 中文 =====
+          CONFIG_PACKAGE_luci-i18n-base-zh-cn=y
+          CONFIG_PACKAGE_luci-i18n-firewall-zh-cn=y
+          CONFIG_PACKAGE_luci-i18n-package-manager-zh-cn=y
+
+          # ===== Web 服务器 (关键!) =====
           CONFIG_PACKAGE_uhttpd=y
           CONFIG_PACKAGE_uhttpd-mod-ubus=y
           CONFIG_PACKAGE_uhttpd-mod-ucode=y
-          CONFIG_PACKAGE_luci-theme-bootstrap=y
-          CONFIG_PACKAGE_luci-app-firewall=y
-          CONFIG_PACKAGE_luci-i18n-base-zh-cn=y
+          CONFIG_PACKAGE_cgi-io=y
+          CONFIG_PACKAGE_px5g-mbedtls=y
+
+          # ===== ucode 运行时 + 全部模块 (关键!) =====
+          CONFIG_PACKAGE_ucode=y
+          CONFIG_PACKAGE_ucode-mod-digest=y
+          CONFIG_PACKAGE_ucode-mod-fs=y
+          CONFIG_PACKAGE_ucode-mod-html=y
+          CONFIG_PACKAGE_ucode-mod-log=y
+          CONFIG_PACKAGE_ucode-mod-math=y
+          CONFIG_PACKAGE_ucode-mod-nl80211=y
+          CONFIG_PACKAGE_ucode-mod-rtnl=y
+          CONFIG_PACKAGE_ucode-mod-ubus=y
+          CONFIG_PACKAGE_ucode-mod-uci=y
+          CONFIG_PACKAGE_ucode-mod-uclient=y
+          CONFIG_PACKAGE_ucode-mod-uloop=y
+
+          # ===== rpcd 全部模块 =====
+          CONFIG_PACKAGE_rpcd=y
+          CONFIG_PACKAGE_rpcd-mod-file=y
+          CONFIG_PACKAGE_rpcd-mod-iwinfo=y
+          CONFIG_PACKAGE_rpcd-mod-luci=y
+          CONFIG_PACKAGE_rpcd-mod-rpcsys=y
+          CONFIG_PACKAGE_rpcd-mod-rrdns=y
+          CONFIG_PACKAGE_rpcd-mod-ucode=y
+
+          # ===== Docker =====
+          CONFIG_PACKAGE_docker=y
+          CONFIG_PACKAGE_dockerd=y
+          CONFIG_PACKAGE_docker-compose=y
+          CONFIG_PACKAGE_containerd=y
+          CONFIG_PACKAGE_runc=y
+          CONFIG_PACKAGE_tini=y
+          CONFIG_PACKAGE_libseccomp=y
+          CONFIG_PACKAGE_luci-app-dockerman=y
           CONFIG_PACKAGE_kmod-veth=y
           CONFIG_PACKAGE_kmod-ipt-nat=y
           CONFIG_PACKAGE_kmod-ipt-nat6=y
@@ -72,11 +122,39 @@ jobs:
           CONFIG_PACKAGE_kmod-nf-ipvs=y
           CONFIG_PACKAGE_kmod-br-netfilter=y
           CONFIG_PACKAGE_kmod-dummy=y
-          CONFIG_PACKAGE_containerd=y
-          CONFIG_PACKAGE_runc=y
-          CONFIG_PACKAGE_tini=y
-          CONFIG_PACKAGE_libseccomp=y
+
+          # ===== 基础工具 =====
+          CONFIG_PACKAGE_curl=y
           CONFIG_PACKAGE_ca-certificates=y
+          CONFIG_PACKAGE_ca-bundle=y
+          CONFIG_PACKAGE_ip-full=y
+          CONFIG_PACKAGE_ipset=y
+          CONFIG_PACKAGE_coreutils=y
+          CONFIG_PACKAGE_coreutils-nohup=y
+          CONFIG_PACKAGE_coreutils-stat=y
+          CONFIG_PACKAGE_httping=y
+          CONFIG_PACKAGE_uclient-fetch=y
+          CONFIG_PACKAGE_jsonfilter=y
+
+          # ===== 网络 =====
+          CONFIG_PACKAGE_dnsmasq=y
+          CONFIG_PACKAGE_dropbear=y
+          CONFIG_PACKAGE_ppp=y
+          CONFIG_PACKAGE_ppp-mod-pppoe=y
+          CONFIG_PACKAGE_odhcp6c=y
+          CONFIG_PACKAGE_odhcpd-ipv6only=y
+
+          # ===== 防火墙 (iptables 版, 兼容 Docker) =====
+          CONFIG_PACKAGE_iptables=y
+          CONFIG_PACKAGE_ip6tables=y
+          CONFIG_PACKAGE_iptables-mod-extra=y
+          CONFIG_PACKAGE_iptables-mod-conntrack-extra=y
+          CONFIG_PACKAGE_iptables-mod-ipopt=y
+          CONFIG_PACKAGE_firewall=y
+          # CONFIG_PACKAGE_firewall4 is not set
+          # CONFIG_PACKAGE_nftables-json is not set
+
+          # ===== 内核 =====
           CONFIG_KERNEL_DEVTMPFS=y
           CONFIG_KERNEL_DEVTMPFS_MOUNT=y
           CONFIG_KERNEL_TMPFS=y
@@ -87,12 +165,7 @@ jobs:
           CONFIG_KERNEL_OVERLAY_FS=y
           CONFIG_KERNEL_PROC_FS=y
           CONFIG_KERNEL_SYSFS=y
-          CONFIG_PACKAGE_iptables=y
-          CONFIG_PACKAGE_ip6tables=y
-          CONFIG_PACKAGE_iptables-mod-extra=y
-          CONFIG_PACKAGE_firewall=y
-          # CONFIG_PACKAGE_firewall4 is not set
-          EOF
+                    EOF
           make defconfig
           echo "=== 关键配置 ==="
           grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|PACKAGE_firewall|LINUX_6" .config || true
