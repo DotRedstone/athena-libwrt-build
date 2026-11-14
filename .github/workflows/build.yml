@@ -108,25 +108,9 @@ jobs:
       - name: Patch preinit to mount devtmpfs early
         run: |
           cd openwrt
-          cat > package/base-files/files/lib/preinit/79_mount_devtmpfs << 'EOF'
-#!/bin/sh
-# Mount devtmpfs before mount_root so /dev/disk/by-partuuid exists
-mount_devtmpfs() {
-	mkdir -p /dev
-	mount -t devtmpfs devtmpfs /dev 2>/dev/null
-	mkdir -p /dev/disk/by-partuuid /dev/disk/by-uuid /dev/disk/by-label
-	# Create partuuid symlinks manually as fallback
-	for p in /sys/class/block/mmcblk*; do
-		[ -f "$p/uevent" ] || continue
-		dev=$(basename "$p")
-		uuid=$(grep '^PARTUUID=' "$p/uevent" 2>/dev/null | cut -d= -f2)
-		[ -n "$uuid" ] && ln -sf "../../$dev" "/dev/disk/by-partuuid/$uuid" 2>/dev/null
-	done
-}
-boot_hook_add preinit_main mount_devtmpfs
-EOF
+          echo 'IyEvYmluL3NoCm1vdW50X2RldnRtcGZzKCkgewogIG1rZGlyIC1wIC9kZXYKICBtb3VudCAtdCBkZXZ0bXBmcyBkZXZ0bXBmcyAvZGV2IDI+L2Rldi9udWxsCiAgbWtkaXIgLXAgL2Rldi9kaXNrL2J5LXBhcnR1dWlkCiAgZm9yIHAgaW4gL3N5cy9jbGFzcy9ibG9jay9tbWNibGswcCo7IGRvCiAgICBbIC1mICIkcC91ZXZlbnQiIF0gfHwgY29udGludWUKICAgIGQ9JChiYXNlbmFtZSAiJHAiKQogICAgdT0kKGdyZXAgIl5QQVJUVVVJRD0iICIkcC91ZXZlbnQiIDI+L2Rldi9udWxsIHwgY3V0IC1kPSAtZjIpCiAgICBbIC1uICIkdSIgXSAmJiBsbiAtc2YgIi4uLy4uLyRkIiAiL2Rldi9kaXNrL2J5LXBhcnR1dWlkLyR1IiAyPi9kZXYvbnVsbAogIGRvbmUKfQpib290X2hvb2tfYWRkIHByZWluaXRfbWFpbiBtb3VudF9kZXZ0bXBmcwo=' | base64 -d > package/base-files/files/lib/preinit/79_mount_devtmpfs
           chmod +x package/base-files/files/lib/preinit/79_mount_devtmpfs
-          echo "=== 脚本已创建 ==="
+          echo "=== Created ==="
           cat package/base-files/files/lib/preinit/79_mount_devtmpfs
 
       - name: Download packages
