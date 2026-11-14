@@ -36,7 +36,7 @@ jobs:
             openwrt/build_dir/host
             openwrt/build_dir/toolchain-*
             openwrt/.ccache
-          key: owrt-618-${{ hashFiles('.github/workflows/build.yml', '.config') }}
+          key: owrt-618-v1
           restore-keys: |
             owrt-618-
 
