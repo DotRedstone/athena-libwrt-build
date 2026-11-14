@@ -25,7 +25,7 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/immortalwrt/immortalwrt.git openwrt
           cd openwrt
-          echo "内核版本:" && grep KERNEL_PATCHVER target/linux/qualcommax/Makefile
+          echo "内核:" && grep KERNEL_PATCHVER target/linux/qualcommax/Makefile
 
       - name: Update feeds
         run: |
@@ -45,7 +45,6 @@ jobs:
           CONFIG_PACKAGE_dockerd=y
           CONFIG_PACKAGE_docker-compose=y
           CONFIG_PACKAGE_luci-app-dockerman=y
-          CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y
           CONFIG_PACKAGE_kmod-veth=y
           CONFIG_PACKAGE_kmod-ipt-nat=y
           CONFIG_PACKAGE_kmod-ipt-nat6=y
@@ -58,10 +57,15 @@ jobs:
           CONFIG_PACKAGE_tini=y
           CONFIG_PACKAGE_libseccomp=y
           CONFIG_PACKAGE_ca-certificates=y
+          CONFIG_PACKAGE_iptables=y
+          CONFIG_PACKAGE_ip6tables=y
+          CONFIG_PACKAGE_iptables-mod-extra=y
+          CONFIG_PACKAGE_firewall=y
+          # CONFIG_PACKAGE_firewall4 is not set
           EOF
           make defconfig
-          echo "=== 关键配置验证 ==="
-          grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|LINUX_6" .config || true
+          echo "=== 关键配置 ==="
+          grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|PACKAGE_firewall|LINUX_6" .config || true
 
       - name: Download packages
         run: |
@@ -71,13 +75,21 @@ jobs:
       - name: Build
         run: |
           cd openwrt
-          make -j$(nproc) 2>&1 | tail -80
+          set -o pipefail
+          make -j$(nproc) 2>&1 | tee /tmp/build.log | tail -100
+          echo "=== 编译结束，检查产物 ==="
+          find bin/targets -name "*.bin" 2>/dev/null | head -5
 
-      - name: Show firmware
+      - name: Show errors if failed
+        if: failure()
         run: |
-          find openwrt/bin/targets -name "*.bin" -exec ls -lh {} \;
+          echo "=== 错误摘要 ==="
+          grep -iE "ERROR:|failed to build|make.*Error" /tmp/build.log 2>/dev/null | tail -30
+          echo "=== 最后一个失败的包 ==="
+          grep -B2 "failed to build" /tmp/build.log 2>/dev/null | tail -10
 
       - name: Upload firmware
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: athena-618-firmware
