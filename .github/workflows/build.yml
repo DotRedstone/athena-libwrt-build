@@ -104,7 +104,33 @@ jobs:
           echo "=== 修改后 ==="
           grep -n "DEVTMPFS" target/linux/generic/config-6.18 | head -5
 
+
+      - name: Patch preinit to mount devtmpfs early
+        run: |
+          cd openwrt
+          cat > package/base-files/files/lib/preinit/79_mount_devtmpfs << 'EOF'
+#!/bin/sh
+# Mount devtmpfs before mount_root so /dev/disk/by-partuuid exists
+mount_devtmpfs() {
+	mkdir -p /dev
+	mount -t devtmpfs devtmpfs /dev 2>/dev/null
+	mkdir -p /dev/disk/by-partuuid /dev/disk/by-uuid /dev/disk/by-label
+	# Create partuuid symlinks manually as fallback
+	for p in /sys/class/block/mmcblk*; do
+		[ -f "$p/uevent" ] || continue
+		dev=$(basename "$p")
+		uuid=$(grep '^PARTUUID=' "$p/uevent" 2>/dev/null | cut -d= -f2)
+		[ -n "$uuid" ] && ln -sf "../../$dev" "/dev/disk/by-partuuid/$uuid" 2>/dev/null
+	done
+}
+boot_hook_add preinit_main mount_devtmpfs
+EOF
+          chmod +x package/base-files/files/lib/preinit/79_mount_devtmpfs
+          echo "=== 脚本已创建 ==="
+          cat package/base-files/files/lib/preinit/79_mount_devtmpfs
+
       - name: Download packages
+
         run: |
           cd openwrt
           make download -j8 || true
