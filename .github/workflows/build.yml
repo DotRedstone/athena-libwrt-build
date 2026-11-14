@@ -77,6 +77,20 @@ jobs:
           echo "=== 关键配置 ==="
           grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|PACKAGE_firewall|LINUX_6" .config || true
 
+
+      - name: Patch kernel config for DEVTMPFS
+        run: |
+          cd openwrt
+          echo "=== 修改前 ==="
+          grep -n "DEVTMPFS" target/linux/generic/config-6.18 | head -5
+          # 强制开启 DEVTMPFS_MOUNT
+          sed -i 's|^# CONFIG_DEVTMPFS_MOUNT is not set|CONFIG_DEVTMPFS_MOUNT=y|' target/linux/generic/config-6.18
+          grep -q "^CONFIG_DEVTMPFS_MOUNT=y" target/linux/generic/config-6.18 || echo "CONFIG_DEVTMPFS_MOUNT=y" >> target/linux/generic/config-6.18
+          sed -i 's|^# CONFIG_DEVTMPFS is not set|CONFIG_DEVTMPFS=y|' target/linux/generic/config-6.18
+          grep -q "^CONFIG_DEVTMPFS=y" target/linux/generic/config-6.18 || echo "CONFIG_DEVTMPFS=y" >> target/linux/generic/config-6.18
+          echo "=== 修改后 ==="
+          grep -n "DEVTMPFS" target/linux/generic/config-6.18 | head -5
+
       - name: Download packages
         run: |
           cd openwrt
