@@ -113,6 +113,14 @@ jobs:
           echo "=== Created ==="
           cat package/base-files/files/lib/preinit/79_mount_devtmpfs
 
+      - name: Patch fstab for overlay
+        run: |
+          cd openwrt
+          mkdir -p package/base-files/files/etc/config
+          echo 'Y29uZmlnIGdsb2JhbAoJb3B0aW9uIGFub25fc3dhcCAnMCcKCW9wdGlvbiBhbm9uX21vdW50ICcxJwoJb3B0aW9uIGF1dG9fc3dhcCAnMScKCW9wdGlvbiBhdXRvX21vdW50ICcxJwoJb3B0aW9uIGRlbGF5X3Jvb3QgJzUnCglvcHRpb24gY2hlY2tfZnMgJzAnCgpjb25maWcgbW91bnQKCW9wdGlvbiB0YXJnZXQgJy9vdmVybGF5JwoJb3B0aW9uIGRldmljZSAnL2Rldi9tbWNibGswcDIyJwoJb3B0aW9uIGZzdHlwZSAnZXh0NCcKCW9wdGlvbiBvcHRpb25zICdydyxub2F0aW1lJwoJb3B0aW9uIGVuYWJsZWQgJzEnCg==' | base64 -d > package/base-files/files/etc/config/fstab
+          echo "=== fstab 内容 ==="
+          cat package/base-files/files/etc/config/fstab
+
       - name: Download packages
 
         run: |
