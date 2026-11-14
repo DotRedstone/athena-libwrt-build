@@ -57,6 +57,16 @@ jobs:
           CONFIG_PACKAGE_tini=y
           CONFIG_PACKAGE_libseccomp=y
           CONFIG_PACKAGE_ca-certificates=y
+          CONFIG_KERNEL_DEVTMPFS=y
+          CONFIG_KERNEL_DEVTMPFS_MOUNT=y
+          CONFIG_KERNEL_TMPFS=y
+          CONFIG_KERNEL_BLK_DEV=y
+          CONFIG_KERNEL_EXT4=y
+          CONFIG_KERNEL_SQUASHFS=y
+          CONFIG_KERNEL_SQUASHFS_XZ=y
+          CONFIG_KERNEL_OVERLAY_FS=y
+          CONFIG_KERNEL_PROC_FS=y
+          CONFIG_KERNEL_SYSFS=y
           CONFIG_PACKAGE_iptables=y
           CONFIG_PACKAGE_ip6tables=y
           CONFIG_PACKAGE_iptables-mod-extra=y
