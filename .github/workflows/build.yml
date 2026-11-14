@@ -36,7 +36,7 @@ jobs:
             openwrt/build_dir/host
             openwrt/build_dir/toolchain-*
             openwrt/.ccache
-          key: owrt-618-v1
+          key: owrt-618-v2
           restore-keys: |
             owrt-618-
 
@@ -45,6 +45,15 @@ jobs:
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+
+      - name: Add EasyTier package (pinned v2.6.4)
+        run: |
+          cd openwrt
+          git clone --depth 1 --branch v2.6.4 https://github.com/EasyTier/luci-app-easytier.git /tmp/luci-app-easytier
+          rm -rf package/easytier-src
+          mkdir -p package/easytier-src
+          cp -r /tmp/luci-app-easytier/* package/easytier-src/
+          echo "=== EasyTier 包目录 ===" && find package/easytier-src -maxdepth 2 -name Makefile
 
       - name: Generate config
         run: |
@@ -84,11 +93,44 @@ jobs:
           CONFIG_PACKAGE_ip6tables=y
           CONFIG_PACKAGE_iptables-mod-extra=y
           CONFIG_PACKAGE_firewall=y
+          CONFIG_PACKAGE_kmod-tun=y
+          CONFIG_PACKAGE_luci-compat=y
+          CONFIG_PACKAGE_easytier=y
+          CONFIG_PACKAGE_luci-app-easytier=y
+          CONFIG_PACKAGE_luci-i18n-easytier-zh-cn=y
+          CONFIG_PACKAGE_kmod-wireguard=y
+          CONFIG_PACKAGE_wireguard-tools=y
+          CONFIG_PACKAGE_luci-proto-wireguard=y
+          CONFIG_PACKAGE_luci-app-ttyd=y
+          CONFIG_PACKAGE_luci-app-upnp=y
+          CONFIG_PACKAGE_luci-app-wol=y
+          CONFIG_PACKAGE_luci-app-ddns=y
+          CONFIG_PACKAGE_ddns-scripts-cloudflare=y
+          CONFIG_PACKAGE_luci-app-diskman=y
+          CONFIG_PACKAGE_block-mount=y
+          CONFIG_PACKAGE_e2fsprogs=y
+          CONFIG_PACKAGE_fdisk=y
+          CONFIG_PACKAGE_lsblk=y
+          CONFIG_PACKAGE_kmod-usb-storage=y
+          CONFIG_PACKAGE_kmod-usb3=y
+          CONFIG_PACKAGE_kmod-fs-vfat=y
+          CONFIG_PACKAGE_kmod-fs-exfat=y
+          CONFIG_PACKAGE_kmod-fs-ntfs3=y
+          CONFIG_PACKAGE_kmod-macvlan=y
+          CONFIG_PACKAGE_curl=y
+          CONFIG_PACKAGE_wget-ssl=y
+          CONFIG_PACKAGE_jq=y
+          CONFIG_PACKAGE_bash=y
+          CONFIG_PACKAGE_htop=y
+          CONFIG_PACKAGE_nano=y
+          CONFIG_PACKAGE_tcpdump=y
+          CONFIG_PACKAGE_openssh-sftp-server=y
+          CONFIG_PACKAGE_zram-swap=y
           # CONFIG_PACKAGE_firewall4 is not set
           EOF
           make defconfig
           echo "=== 关键配置 ==="
-          grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|PACKAGE_firewall|LINUX_6" .config || true
+          grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|PACKAGE_firewall|LINUX_6|PACKAGE_kmod-tun|PACKAGE_easytier|PACKAGE_luci-app-easytier|PACKAGE_luci-compat|PACKAGE_kmod-wireguard|PACKAGE_luci-app-ttyd|PACKAGE_luci-app-diskman" .config || true
 
 
       - name: Patch kernel config for DEVTMPFS
