@@ -1,4 +1,4 @@
-name: Build Athena
+name: Build Athena 6.18
 
 on: workflow_dispatch
 
@@ -11,14 +11,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL 2>/dev/null || true
+          df -h /
+
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-setuptools rsync swig unzip zlib1g-dev file wget
+          sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-setuptools rsync swig unzip zlib1g-dev file wget cpio
 
-      - name: Clone source
+      - name: Clone ImmortalWrt master (6.18)
         run: |
-          git clone --depth 1 -b 25.12-nss https://github.com/LiBwrt/openwrt-6.x openwrt
+          git clone --depth 1 https://github.com/immortalwrt/immortalwrt.git openwrt
+          cd openwrt
+          echo "内核版本:" && grep KERNEL_PATCHVER target/linux/qualcommax/Makefile
 
       - name: Update feeds
         run: |
@@ -26,14 +33,37 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Configure
+      - name: Generate config
         run: |
-          cp .config openwrt/.config
           cd openwrt
+          cat > .config << 'EOF'
+          CONFIG_TARGET_qualcommax=y
+          CONFIG_TARGET_qualcommax_ipq60xx=y
+          CONFIG_TARGET_qualcommax_ipq60xx_DEVICE_jdcloud_re-cs-02=y
+          CONFIG_TARGET_MULTI_PROFILE=n
+          CONFIG_PACKAGE_docker=y
+          CONFIG_PACKAGE_dockerd=y
+          CONFIG_PACKAGE_docker-compose=y
+          CONFIG_PACKAGE_luci-app-dockerman=y
+          CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y
+          CONFIG_PACKAGE_kmod-veth=y
+          CONFIG_PACKAGE_kmod-ipt-nat=y
+          CONFIG_PACKAGE_kmod-ipt-nat6=y
+          CONFIG_PACKAGE_kmod-ipt-physdev=y
+          CONFIG_PACKAGE_kmod-nf-ipvs=y
+          CONFIG_PACKAGE_kmod-br-netfilter=y
+          CONFIG_PACKAGE_kmod-dummy=y
+          CONFIG_PACKAGE_containerd=y
+          CONFIG_PACKAGE_runc=y
+          CONFIG_PACKAGE_tini=y
+          CONFIG_PACKAGE_libseccomp=y
+          CONFIG_PACKAGE_ca-certificates=y
+          EOF
           make defconfig
-          grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth" .config || true
+          echo "=== 关键配置验证 ==="
+          grep -E "DEVICE_jdcloud|PACKAGE_dockerd|PACKAGE_kmod-veth|LINUX_6" .config || true
 
-      - name: Download
+      - name: Download packages
         run: |
           cd openwrt
           make download -j8 || true
@@ -41,10 +71,14 @@ jobs:
       - name: Build
         run: |
           cd openwrt
-          make -j$(nproc)
+          make -j$(nproc) 2>&1 | tail -80
+
+      - name: Show firmware
+        run: |
+          find openwrt/bin/targets -name "*.bin" -exec ls -lh {} \;
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: athena-firmware
+          name: athena-618-firmware
           path: openwrt/bin/targets/**/*.bin
